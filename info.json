@@ -1,0 +1,15 @@
+{
+  "name": "piecewise-undergrounds",
+  "version": "0.1.0",
+  "title": "Piecewise Undergrounds",
+  "author": "protocol_1903",
+  "homepage": "https://discord.gg/K3fXMGVc4z",
+  "description": "What? Underground pipes actually require... pipes!?",
+  "factorio_version": "2.0",
+  "dependencies": [
+    "base >= 2.0.33",
+    "! the-one-mod-with-underground-bits",
+    "! underground-pipe-pack",
+    "! FluidMustFlow"
+  ]
+}
