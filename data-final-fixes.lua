@@ -1,20 +1,26 @@
+data:extend{{
+  type = "recipe-category",
+  name = "piecewise-undergrounds-void"
+}}
+
+require("__piecewise-undergrounds__/compatibility/compatibility")
+
 for u, underground in pairs(data.raw["pipe-to-ground"]) do
 
   if u:sub(1,9) ~= "disabled-" then
 
-    pipe = data.raw.pipe[u:sub(1,-11)]
-    if pipe and data.raw.item[pipe.name] then
+    pipe = data.raw.pipe[underground.pu_compat.associated_pipe] or data.raw["storage-tank"][underground.pu_compat.associated_pipe]
+    -- only create if the item exists, and it has not already been created
+    if pipe and data.raw.item[pipe.name] and not data.raw["simple-entity-with-owner"]["pu-under-" .. pipe.name] then
       data:extend({
         {
           type = "simple-entity-with-owner",
           name = "pu-under-" .. pipe.name,
-          picture = {
-            filename = "__piecewise-undergrounds__/nothing.png",
-            size = {1, 1}
-          },
-          icon = "__piecewise-undergrounds__/nothing.png",
-          icon_size = 1,
-          -- selection_box = {{-0.25, -0.25}, {0.25, 0.25}},
+          localised_name = {"entity-name.psuedo-underground", {"entity-name." .. pipe.name}},
+          picture = util.empty_sprite(),
+          icon = util.empty_icon().icon,
+          selection_box = {{-0.35, -0.35}, {0.35, 0.35}},
+          selection_priority = 60,
           allow_copy_paste = false,
           flags = { "placeable-neutral", "not-on-map", "not-upgradable", "placeable-off-grid", "player-creation" },
           placeable_by = { item = pipe.name, count = 1},
@@ -24,108 +30,103 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
       })
     end
 
-    local fake_v = table.deepcopy(underground)
-    fake_v.name = "disabled-" .. u
-    fake_v.type = "pump"
-    fake_v.placeable_by = {item = u, count = 1}
-    fake_v.localised_name = {"entity-name.disabled", {"entity-name." .. u}}
-    fake_v.localised_description = {"entity-description.disabled"}
-    fake_v.hidden_in_factoriopedia = true
-    fake_v.animations = fake_v.pictures
-    for _, connection in pairs(fake_v.fluid_box.pipe_connections) do
-      connection.flow_direction = "output"
-    end
-    fake_v.energy_source = {
-      type = "void"
-    }
-    fake_v.energy_usage = "0W"
-    fake_v.pumping_speed = 0
-    data.raw["pump"][fake_v.name] = fake_v
+    -- make the old item place this new item
+    data.raw.item[u].place_result = "placement-" .. u
+    underground.placeable_by = {item = u, count = 1}
 
-    -- if recipe exists, remove pipes from it
-    if data.raw.recipe[u] then
+    data:extend{
+      {
+        type = "furnace",
+        name = "placement-" .. u,
+        localised_name = {"entity-name." .. u},
+        hidden_in_factoriopedia = true,
+        icon = underground.icon,
+        icon_size = underground.icon_size,
+        placeable_by = underground.placeable_by,
+        minable = underground.minable,
+        flags = underground.flags,
+        collision_box = underground.collision_box,
+        selection_box = underground.selection_box,
+        heating_energy = underground.heating_energy,
+        fluid_boxes = {
+          {
+            production_type = "input",
+            volume = 100,
+            hide_connection_info = true,
+            pipe_connections = {},
+            pipe_covers = underground.fluid_box.pipe_covers
+          }
+        },
+        source_inventory_size = 0,
+        result_inventory_size = 0,
+        graphics_set = {
+          frozen_patch = underground.frozen_patch,
+          animation = underground.pictures
+        },
+        energy_source = { type = "void" },
+        energy_usage = "1W",
+        crafting_speed = 1,
+        crafting_categories = { "piecewise-undergrounds-void" }
+      },
+      {
+        type = "furnace",
+        name = "incomplete-" .. u,
+        localised_name = {"entity-name.incomplete", {"entity-name." .. u}},
+        hidden_in_factoriopedia = true,
+        icon = underground.icon,
+        icon_size = underground.icon_size,
+        placeable_by = underground.placeable_by,
+        minable = underground.minable,
+        flags = underground.flags,
+        collision_box = underground.collision_box,
+        selection_box = underground.selection_box,
+        heating_energy = underground.heating_energy,
+        fluid_boxes = {
+          {
+            production_type = "input",
+            volume = 100,
+            hide_connection_info = true,
+            pipe_connections = {},
+            pipe_covers = underground.fluid_box.pipe_covers
+          }
+        },
+        source_inventory_size = 0,
+        result_inventory_size = 0,
+        graphics_set = {
+          frozen_patch = underground.frozen_patch,
+          animation = underground.pictures
+        },
+        energy_source = { type = "void" },
+        energy_usage = "1W",
+        crafting_speed = 1,
+        crafting_categories = { "piecewise-undergrounds-void" }
+      },
+    }
+
+    for i, connection in pairs(underground.fluid_box.pipe_connections) do
+      data.raw.furnace["placement-" .. u].fluid_boxes[1].pipe_connections[i] = table.deepcopy(connection)
+      data.raw.furnace["incomplete-" .. u].fluid_boxes[1].pipe_connections[i] = table.deepcopy(connection)
+      data.raw.furnace["placement-" .. u].fluid_boxes[1].pipe_connections[i].flow_direction = "output"
+      data.raw.furnace["incomplete-" .. u].fluid_boxes[1].pipe_connections[i].flow_direction = connection.connection_type == "underground" and "input-output" or "output"
+    end
+
+    -- if recipe exists
+    if not mods["bztin"] and data.raw.recipe[u] then
       local ingredients = data.raw.recipe[u].ingredients
       data.raw.recipe[u].ingredients = {}
       -- add ingredient if not the associated pipe
       for _, ingredient in pairs(ingredients) do
-        if not ingredient.name:find("pipe") then
+        if not data.raw.pipe[ingredient.name] then -- if not a pipe then add to ingredients
           data.raw.recipe[u].ingredients[#data.raw.recipe[u].ingredients+1] = ingredient
+        end
+      end
+    elseif mods["bztin"] and data.raw.recipe[u] then
+      -- modify counts
+      for _, ingredient in pairs(data.raw.recipe[u].ingredients) do
+        if data.raw.pipe[ingredient.name] and ingredient.amount > 2 then
+          ingredient.amount = 2 -- if a pipe, set amount to 2
         end
       end
     end
   end
 end
-
--- for u, underground in pairs(data.raw["underground-belt"]) do
-
---   if u:sub(1,9) ~= "disabled-" then
-
-
-    -- if not item then -- this mess of code because theres no easy way to find the asociated belt
-    --   i, j = entity.name:find("underground")
-    --   item = prototypes.item[entity.name:sub(1,i-1) .. "transport" .. entity.name:sub(j+1)]
-    --   if not item then error("item not found, someone broke convention :/") end
-    -- end
-
---     pipe = data.raw.pipe[u:sub(1,-11)]
---     if pipe and data.raw.item[pipe.name] then
---       data:extend({
---         {
---           type = "simple-entity-with-owner",
---           name = "pu-under-" .. pipe.name,
---           picture = {
---             filename = "__piecewise-undergrounds__/nothing.png",
---             size = {1, 1}
---           },
---           icon = "__piecewise-undergrounds__/nothing.png",
---           icon_size = 1,
---           selection_box = {{-0.25, -0.25}, {0.25, 0.25}},
---           flags = { "placeable-neutral", "not-on-map", "no-copy-paste", "not-upgradable", "placeable-off-grid", "player-creation" },
---           placeable_by = { item = pipe.name, count = 1},
---           hidden_in_factoriopedia = true
---         }
---       })
---     end
-
---     local fake_v = table.deepcopy(underground)
---     fake_v.name = "disabled-" .. u
---     fake_v.type = "pump"
---     fake_v.placeable_by = {item = u, count = 1}
---     fake_v.localised_name = {"entity-name.disabled", {"entity-name." .. u}}
---     fake_v.localised_description = {"entity-description.disabled"}
---     fake_v.hidden_in_factoriopedia = true
---     data.raw["linked-belt"][fake_v.name] = fake_v
-
---     -- if recipe exists, remove belts from it
---     if data.raw.recipe[u] then
---       local ingredients = data.raw.recipe[u].ingredients
---       data.raw.recipe[u].ingredients = {}
---       -- add ingredient if not the associated belt
---       for _, ingredient in pairs(ingredients) do
---         if ingredient.name:sub(-4) ~= "belt" or ingredient.name:sub(-16) == "underground-belt" then
---           data.raw.recipe[u].ingredients[#data.raw.recipe[u].ingredients+1] = ingredient
---         end
---       end
---     end
---   end
--- end
-
---[[
-for u, underground in pairs(data.raw["underground-belt"]) do
-
-  local fake_v = underground
-  fake_v.speed = 0
-
-  -- if recipe exists, remove belts from it
-  if data.raw.recipe[u] then
-    local ingredients = data.raw.recipe[u].ingredients
-    data.raw.recipe[u].ingredients = {}
-    -- add ingredient if not the associated pipe
-    for _, ingredient in pairs(ingredients) do
-      if ingredient.name:sub(-4) ~= "belt" or ingredient.name:sub(-16) == "underground-belt" then
-        data.raw.recipe[u].ingredients[#data.raw.recipe[u].ingredients+1] = ingredient
-      end
-    end
-  end
-end
-]]
