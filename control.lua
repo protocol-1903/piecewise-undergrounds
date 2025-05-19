@@ -43,8 +43,8 @@ script.on_event(defines.events.on_tick, function()
         end
 
         -- clear storage
-        remove_from_storage[entities[1].unit_number] = true
-        remove_from_storage[entities[2].unit_number] = true
+        storage[entities[1].unit_number] = nil
+        storage[entities[2].unit_number] = nil
 
         -- revert fake undergrounds to normal ones
         for _, underground in pairs(entities) do
@@ -76,9 +76,6 @@ end)
 
 local function order_construction(entity, neighbour, player)
   game.print("order construction")
-  -- cancel removal from storage, if exists
-  remove_from_storage[entity.unit_number] = nil
-  remove_from_storage[neighbour.unit_number] = nil
 
   local distance = xutil.distance(entity, neighbour)
   local dir = xutil.relative_direction(entity, neighbour)
@@ -145,32 +142,36 @@ local function order_construction(entity, neighbour, player)
       game.print("found an existing unit")
       -- entity exists, cancel deconstruction
       cancelled_deconstruction[existing_units[1].unit_number] = true
+      ordered_deconstruction[existing_units[1].unit_number] = nil
       existing_units[1].cancel_deconstruction(entity.force)
     end
   end
 
-  -- replace placement entity with incomplete variant
-  local new_entity = entity.surface.create_entity {
-    name = xutil.get_type.incomplete(entity),
-    position = entity.position,
-    direction = entity.direction,
-    quality = entity.quality,
-    force = entity.force,
-    type = entity.type == "underground-belt" and entity.belt_to_ground_type or nil
-  }
-  entity.destroy()
+  local new_entity
+  if xutil.is_type.placement(entity) then
+    -- replace placement entity with incomplete variant
+    new_entity = entity.surface.create_entity {
+      name = xutil.get_type.incomplete(entity),
+      position = entity.position,
+      direction = entity.direction,
+      quality = entity.quality,
+      force = entity.force,
+      type = entity.type == "underground-belt" and entity.belt_to_ground_type or nil
+    }
+    entity.destroy()
+  end
 
   -- add to construction checks
-  storage.under_construction[new_entity.unit_number] = {new_entity, neighbour}
-  storage.under_construction[neighbour.unit_number] = {new_entity, neighbour}
+  storage.under_construction[new_entity and new_entity.unit_number or entity.unit_number] = {new_entity or entity, neighbour}
+  storage.under_construction[neighbour.unit_number] = {new_entity or entity, neighbour}
 end
 
 local function cancel_construction(entity, player)
   game.print("cancel construction")
   local entities = storage.under_construction[entity.unit_number]
   local other_entity = entities[1] == entity and entities[2] or entities[1]
-  remove_from_storage[entities[1].unit_number] = true
-  remove_from_storage[entities[2].unit_number] = true
+  storage.under_construction[entities[1].unit_number] = nil
+  storage.under_construction[entities[2].unit_number] = nil
 
   -- mark extraneous underground entities for decosntruction/remove by player
   local undergrounds = entities[1].surface.find_entities_filtered {
@@ -396,24 +397,36 @@ local function on_deconstructed(event)
   if xutil.is_type.incomplete(entity) and storage.under_construction[entity.unit_number] then
     game.print("cancel construction for deconstructed entity")
 
+    -- get current neighbour and potential new neighbour
+    local entities = storage.under_construction[entity.unit_number]
+    local other_entity = entities[1] == entity and entities[2] or entities[1]
+    local new_neighbour = xutil.get_neighbour(other_entity, entity)
+
+    -- cancel old construction order
     cancel_construction(entity, player)
 
-    -- TODO check if something else should be constructed behind this entity
+    -- remove old entities from storage
+    storage.under_construction[entity.unit_number] = nil
+    storage.under_construction[other_entity.unit_number] = nil
 
-    -- no neighbour found, i.e. disconnected, so replace with a basic variant
-    entity.surface.create_entity {
-      name = xutil.get_type.incomplete(entity),
-      position = entity.position,
-      direction = entity.direction,
-      quality = entity.quality,
-      force = entity.force,
-      type = entity.type == "underground-belt" and entity.belt_to_ground_type or nil
-    }
-    entity.destroy()
+    -- if new neighbour exists, attempt to construct those
+    if new_neighbour then
+      order_construction(other_entity, new_neighbour, player)
+    end
+
+    game.print("fidoshaiofhiodhsao")
+
   elseif xutil.is_type.base(entity) then
     -- completed pair, so 'deconstruct' both and delete this one
-    order_deconstruction(entity, nil, player, true)
+    local other_entity = xutil.get_neighbour(entity)
+    local new_neighbour = xutil.get_neighbour(other_entity, entity)
+    other_entity = order_deconstruction(entity, nil, player, true)
+
+    if new_neighbour then
+      order_construction(other_entity, new_neighbour, player)
+    end
   elseif entity.name ~= "entity-ghost" and xutil.is_type.psuedo(entity) and event.name == defines.events.on_marked_for_deconstruction and not ordered_deconstruction[entity.unit_number] then
+    game.print("cancelled deconstruction of psuedos", {skip = defines.print_skip.never})
     cancelled_deconstruction[entity.unit_number] = true
     entity.cancel_deconstruction(entity.force)
   end
@@ -424,9 +437,9 @@ end
 local event_filter = {
   {filter = "type", type = "simple-entity-with-owner"},
   {filter = "type", type = "pipe-to-ground"},
-  {filter = "type", type = "furnace"},
+  {filter = "type", type = "valve"},
   {filter = "ghost_type", type = "pipe-to-ground"},
-  {filter = "ghost_type", type = "furnace"}
+  {filter = "ghost_type", type = "valve"}
 }
 
 script.on_event(defines.events.script_raised_built, on_constructed, event_filter)

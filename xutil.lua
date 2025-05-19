@@ -4,14 +4,14 @@ xutil.is_type = {
   base = function(entity)
     type = entity.type ~= "entity-ghost" and entity.type or entity.ghost_type
     name = entity.name ~= "entity-ghost" and entity.name or entity.ghost_name
-    return (type == "furnace" or type == "pipe-to-ground") and name:sub(1,11) ~= "incomplete-" and name:sub(1,10) ~= "placement-"
+    return (type == "valve" or type == "pipe-to-ground") and name:sub(1,11) ~= "incomplete-" and name:sub(1,10) ~= "placement-"
   end,
   incomplete = function(entity)
-    return (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "furnace" and
+    return (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "valve" and
       (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name):sub(1,11) == "incomplete-"
   end,
   placement = function(entity)
-    return (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "furnace" and
+    return (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "valve" and
       (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name):sub(1,10) == "placement-"
   end,
   psuedo = function(entity)
@@ -93,60 +93,64 @@ xutil.get_neighbour = function(entity, entity_to_ignore)
           end
         end
       end
-    end
-    -- use expensive search if check fails or no connection found
+    else -- use expensive search if check fails
 
-    local max_distance = 0
-    for i=1, #entity.fluidbox do
-      -- get each pipe connection in the current fluidbox
-      for _, pipe_connection in pairs(entity.fluidbox.get_pipe_connections(i)) do
-        -- must have a connection and must be underground type and not ordered for deconstruction
-        if pipe_connection.connection_type == "underground" then
-          max_distance = pipe_connection.max_underground_distance
-          break
+      local max_distance = 0
+      for i=1, #entity.fluidbox do
+        -- get each pipe connection in the current fluidbox
+        for _, pipe_connection in pairs(entity.fluidbox.get_pipe_connections(i)) do
+          -- must have a connection and must be underground type and not ordered for deconstruction
+          if pipe_connection.connection_type == "underground" then
+            max_distance = pipe_connection.max_underground_distance
+            break
+          end
         end
       end
-    end
 
-    local dir = xutil.boolean_direction(entity.direction)
-    local pos1 = {
-      x = entity.position.x,
-      y = entity.position.y
-    }
-    local pos2 = {
-      x = pos1.x + prototypes.max_pipe_to_ground_distance * dir.x,
-      y = pos1.y + prototypes.max_pipe_to_ground_distance * dir.y
-    }
+      local dir = xutil.boolean_direction(entity.direction)
+      local pos1 = {
+        x = entity.position.x,
+        y = entity.position.y
+      }
+      local pos2 = {
+        x = pos1.x + prototypes.max_pipe_to_ground_distance * dir.x,
+        y = pos1.y + prototypes.max_pipe_to_ground_distance * dir.y
+      }
 
-    local shortest_distance = 0
-    local neighbour
+      local shortest_distance = 0
+      local neighbour
 
-    for _, placement in pairs(entity.surface.find_entities_filtered{
-      area = { -- find the same entity in that direction
-        {
-          x = pos1.x < pos2.x and pos1.x or pos2.x - 0.1,
-          y = pos1.y < pos2.y and pos1.y or pos2.y - 0.1
+      for _, placement in pairs(entity.surface.find_entities_filtered{
+        area = { -- find the same entity in that direction
+          {
+            x = pos1.x < pos2.x and pos1.x or pos2.x - 0.1,
+            y = pos1.y < pos2.y and pos1.y or pos2.y - 0.1
+          },
+          {
+            x = pos1.x > pos2.x and pos1.x or pos2.x - 0.1,
+            y = pos1.y > pos2.y and pos1.y or pos2.y - 0.1
+          }
         },
-        {
-          x = pos1.x > pos2.x and pos1.x or pos2.x - 0.1,
-          y = pos1.y > pos2.y and pos1.y or pos2.y - 0.1
-        }
-      },
-      name = entity.name,
-      direction = (entity.direction + 8) % 16
-    }) do
-      -- make sure pipe is not the one we're ignoring
-      if not entity_to_ignore or placement.unit_number ~= entity_to_ignore.unit_number then
-        local distance = xutil.distance(placement, entity)
-        if shortest_distance == 0 or shortest_distance > distance then
-          neighbour = placement
-          shortest_distance = distance
+        name = {
+          xutil.get_type.base(entity),
+          xutil.get_type.incomplete(entity)
+        },
+        direction = (entity.direction + 8) % 16
+      }) do
+        -- make sure pipe is not the one we're ignoring
+        if not entity_to_ignore or placement.unit_number ~= entity_to_ignore.unit_number then
+          local distance = xutil.distance(placement, entity)
+          -- make sure its the closest, AND that it agrees that this is the correct neighbour
+          if shortest_distance == 0 or shortest_distance > distance then
+            neighbour = placement
+            shortest_distance = distance
+          end
         end
       end
-    end
 
-    -- make sure the neighbour agrees
-    return neighbour
+      -- make sure the neighbour agrees
+      return neighbour
+    end
   elseif xutil.is_belt(entity) then
     -- if it's a belt, or some derivative
     return entity.neighbours

@@ -3,7 +3,20 @@ data:extend{{
   name = "piecewise-undergrounds-void"
 }}
 
+local xutil = require "xutil"
+
 require("__piecewise-undergrounds__/compatibility/compatibility")
+
+-- modify undergrounds to only connect to proper same types, makes the whole thing a lot easier
+if not mods["no-pipe-touching"] then
+  for u, underground in pairs(data.raw["pipe-to-ground"]) do
+    for _, connection in pairs(underground.fluid_box.pipe_connections) do
+      if connection.connection_type == "underground" then
+        connection.connection_category = u
+      end
+    end
+  end
+end
 
 for u, underground in pairs(data.raw["pipe-to-ground"]) do
 
@@ -36,7 +49,7 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
 
     data:extend{
       {
-        type = "furnace",
+        type = "valve",
         name = "placement-" .. u,
         localised_name = {"entity-name." .. u},
         hidden_in_factoriopedia = true,
@@ -48,28 +61,13 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
         collision_box = underground.collision_box,
         selection_box = underground.selection_box,
         heating_energy = underground.heating_energy,
-        fluid_boxes = {
-          {
-            production_type = "input",
-            volume = 100,
-            hide_connection_info = true,
-            pipe_connections = {},
-            pipe_covers = underground.fluid_box.pipe_covers
-          }
-        },
-        source_inventory_size = 0,
-        result_inventory_size = 0,
-        graphics_set = {
-          frozen_patch = underground.frozen_patch,
-          animation = underground.pictures
-        },
-        energy_source = { type = "void" },
-        energy_usage = "1W",
-        crafting_speed = 1,
-        crafting_categories = { "piecewise-undergrounds-void" }
+        fluid_box = table.deepcopy(underground.fluid_box),
+        mode = "one-way",
+        flow_rate = 0,
+        animations = underground.pictures
       },
       {
-        type = "furnace",
+        type = "valve",
         name = "incomplete-" .. u,
         localised_name = {"entity-name.incomplete", {"entity-name." .. u}},
         hidden_in_factoriopedia = true,
@@ -81,33 +79,19 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
         collision_box = underground.collision_box,
         selection_box = underground.selection_box,
         heating_energy = underground.heating_energy,
-        fluid_boxes = {
-          {
-            production_type = "input",
-            volume = 100,
-            hide_connection_info = true,
-            pipe_connections = {},
-            pipe_covers = underground.fluid_box.pipe_covers
-          }
-        },
-        source_inventory_size = 0,
-        result_inventory_size = 0,
-        graphics_set = {
-          frozen_patch = underground.frozen_patch,
-          animation = underground.pictures
-        },
-        energy_source = { type = "void" },
-        energy_usage = "1W",
-        crafting_speed = 1,
-        crafting_categories = { "piecewise-undergrounds-void" }
+        fluid_box = table.deepcopy(underground.fluid_box),
+        mode = "one-way",
+        flow_rate = 0,
+        animations = underground.pictures
       },
     }
 
+    local placement = data.raw.valve["placement-" .. u]
+    local incomplete = data.raw.valve["incomplete-" .. u]
+
     for i, connection in pairs(underground.fluid_box.pipe_connections) do
-      data.raw.furnace["placement-" .. u].fluid_boxes[1].pipe_connections[i] = table.deepcopy(connection)
-      data.raw.furnace["incomplete-" .. u].fluid_boxes[1].pipe_connections[i] = table.deepcopy(connection)
-      data.raw.furnace["placement-" .. u].fluid_boxes[1].pipe_connections[i].flow_direction = "output"
-      data.raw.furnace["incomplete-" .. u].fluid_boxes[1].pipe_connections[i].flow_direction = connection.connection_type == "underground" and "input-output" or "output"
+      placement.fluid_box.pipe_connections[i].flow_direction = connection.connection_type == "underground" and "input-output" or "output"
+      incomplete.fluid_box.pipe_connections[i].flow_direction = connection.connection_type == "underground" and "input-output" or "output"
     end
 
     -- if recipe exists
