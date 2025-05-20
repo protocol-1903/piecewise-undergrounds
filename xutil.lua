@@ -1,5 +1,6 @@
 local xutil = {}
 
+-- verify entity when called so we can use it as a check if the entity exists
 xutil.is_type = {
   base = function(entity)
     type = entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) or ""

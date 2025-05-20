@@ -20,7 +20,7 @@ end
 
 for u, underground in pairs(data.raw["pipe-to-ground"]) do
 
-  if u:sub(1,9) ~= "disabled-" then
+  if u:sub(1,9) ~= "incomplete-" then
 
     pipe = data.raw.pipe[underground.pu_compat.associated_pipe] or data.raw["storage-tank"][underground.pu_compat.associated_pipe]
     -- only create if the item exists, and it has not already been created
@@ -44,54 +44,31 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
     end
 
     -- make the old item place this new item
-    data.raw.item[u].place_result = "placement-" .. u
+    data.raw.item[u].place_result = "incomplete-" .. u
     underground.placeable_by = {item = u, count = 1}
 
-    data:extend{
-      {
-        type = "valve",
-        name = "placement-" .. u,
-        localised_name = {"entity-name." .. u},
-        hidden_in_factoriopedia = true,
-        icon = underground.icon,
-        icon_size = underground.icon_size,
-        placeable_by = underground.placeable_by,
-        minable = underground.minable,
-        flags = underground.flags,
-        collision_box = underground.collision_box,
-        selection_box = underground.selection_box,
-        heating_energy = underground.heating_energy,
-        fluid_box = table.deepcopy(underground.fluid_box),
-        mode = "one-way",
-        flow_rate = 0,
-        animations = underground.pictures
-      },
-      {
-        type = "valve",
-        name = "incomplete-" .. u,
-        localised_name = {"entity-name.incomplete", {"entity-name." .. u}},
-        hidden_in_factoriopedia = true,
-        icon = underground.icon,
-        icon_size = underground.icon_size,
-        placeable_by = underground.placeable_by,
-        minable = underground.minable,
-        flags = underground.flags,
-        collision_box = underground.collision_box,
-        selection_box = underground.selection_box,
-        heating_energy = underground.heating_energy,
-        fluid_box = table.deepcopy(underground.fluid_box),
-        mode = "one-way",
-        flow_rate = 0,
-        animations = underground.pictures
-      },
+    local incomplete = {
+      type = "valve",
+      name = "incomplete-" .. u,
+      localised_name = {"entity-name.incomplete", {"entity-name." .. u}},
+      hidden_in_factoriopedia = true,
+      icon = underground.icon,
+      icon_size = underground.icon_size,
+      placeable_by = underground.placeable_by,
+      minable = underground.minable,
+      flags = underground.flags,
+      collision_box = underground.collision_box,
+      selection_box = underground.selection_box,
+      heating_energy = underground.heating_energy,
+      fluid_box = table.deepcopy(underground.fluid_box),
+      mode = "one-way",
+      flow_rate = 0,
+      animations = underground.pictures
     }
+    data.raw.valve["incomplete-" .. u] = incomplete
 
-    local placement = data.raw.valve["placement-" .. u]
-    local incomplete = data.raw.valve["incomplete-" .. u]
-
-    for i, connection in pairs(underground.fluid_box.pipe_connections) do
-      placement.fluid_box.pipe_connections[i].flow_direction = connection.connection_type == "underground" and "input-output" or "output"
-      incomplete.fluid_box.pipe_connections[i].flow_direction = connection.connection_type == "underground" and "input-output" or "output"
+    for _, connection in pairs(incomplete.fluid_box.pipe_connections) do
+      connection.flow_direction = connection.connection_type == "underground" and "input-output" or "output"
     end
 
     -- if recipe exists
