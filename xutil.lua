@@ -4,20 +4,16 @@ xutil.is_type = {
   base = function(entity)
     type = entity.type ~= "entity-ghost" and entity.type or entity.ghost_type
     name = entity.name ~= "entity-ghost" and entity.name or entity.ghost_name
-    return (type == "valve" or type == "pipe-to-ground") and name:sub(1,11) ~= "incomplete-" and name:sub(1,10) ~= "placement-"
+    return entity and (type == "valve" or type == "pipe-to-ground") and name:sub(1,11) ~= "incomplete-"
   end,
   incomplete = function(entity)
-    return (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "valve" and
+    return entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "valve" and
       (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name):sub(1,11) == "incomplete-"
-  end,
-  placement = function(entity)
-    return (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "valve" and
-      (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name):sub(1,10) == "placement-"
   end,
   psuedo = function(entity)
     type = entity.type ~= "entity-ghost" and entity.type or entity.ghost_type
     name = entity.name ~= "entity-ghost" and entity.name or entity.ghost_name
-    return type == "simple-entity-with-owner" and name:sub(1,9) == "pu-under-"
+    return entity and type == "simple-entity-with-owner" and name:sub(1,9) == "pu-under-"
   end
 }
 
@@ -25,18 +21,14 @@ xutil.get_type = {
   base = function(entity)
     name = entity.name ~= "entity-ghost" and entity.name or entity.ghost_name
     return xutil.is_type.incomplete(entity) and name:sub(12) or
-      xutil.is_type.placement(entity) and name:sub(11) or
       xutil.is_type.psuedo(entity) and name:sub(10) or
-      name
+      name or ""
   end,
   pipe = function(entity)
     return xutil.get_type.base(entity):sub(1,-11)
   end,
   incomplete = function(entity)
     return "incomplete-" .. xutil.get_type.base(entity)
-  end,
-  placement = function(entity)
-    return "placement-" .. xutil.get_type.base(entity)
   end,
   psuedo = function(entity)
     return "pu-under-" .. xutil.get_type.pipe(entity)
@@ -45,12 +37,12 @@ xutil.get_type = {
 
 -- return if the entity is a pipe to ground/variant
 xutil.is_pipe = function(entity)
-  return prototypes.entity[xutil.get_type.base(entity)].type == "pipe-to-ground"
+  return entity and prototypes.entity[xutil.get_type.base(entity)].type == "pipe-to-ground"
 end
 
 -- return if the entity is an underground belt/variant
 xutil.is_belt = function(entity)
-  return prototypes.entity[xutil.get_type.base(entity)].type == "underground-belt"
+  return entity and prototypes.entity[xutil.get_type.base(entity)].type == "underground-belt"
 end
 
 xutil.distance = function(entity1, entity2)
