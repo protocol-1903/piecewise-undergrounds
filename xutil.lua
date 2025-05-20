@@ -2,24 +2,24 @@ local xutil = {}
 
 xutil.is_type = {
   base = function(entity)
-    type = entity.type ~= "entity-ghost" and entity.type or entity.ghost_type
-    name = entity.name ~= "entity-ghost" and entity.name or entity.ghost_name
-    return entity and (type == "valve" or type == "pipe-to-ground") and name:sub(1,11) ~= "incomplete-"
+    type = entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) or ""
+    name = entity and (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name) or ""
+    return (type == "valve" or type == "pipe-to-ground") and name:sub(1,11) ~= "incomplete-"
   end,
   incomplete = function(entity)
     return entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "valve" and
       (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name):sub(1,11) == "incomplete-"
   end,
   psuedo = function(entity)
-    type = entity.type ~= "entity-ghost" and entity.type or entity.ghost_type
-    name = entity.name ~= "entity-ghost" and entity.name or entity.ghost_name
-    return entity and type == "simple-entity-with-owner" and name:sub(1,9) == "pu-under-"
+    type = entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) or ""
+    name = entity and (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name) or ""
+    return type == "simple-entity-with-owner" and name:sub(1,9) == "pu-under-"
   end
 }
 
 xutil.get_type = {
   base = function(entity)
-    name = entity.name ~= "entity-ghost" and entity.name or entity.ghost_name
+    name = entity and (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name) or ""
     return xutil.is_type.incomplete(entity) and name:sub(12) or
       xutil.is_type.psuedo(entity) and name:sub(10) or
       name or ""
