@@ -66,12 +66,12 @@ xutil.boolean_direction = function(direction)
   }
 end
 
-xutil.get_neighbour = function(entity, entity_to_ignore)
+xutil.get_neighbour = function(entity, entity_to_ignore, direction)
   if not entity or entity.name == "entity-ghost" then return end
 
   -- if it's a pipe, or some derivative
   if xutil.is_pipe(entity) then
-    if not entity.to_be_deconstructed() and not entity_to_ignore then
+    if not entity.to_be_deconstructed() and not entity_to_ignore and not direction then
       -- use simple search
 
       -- get each fluidbox
@@ -100,7 +100,7 @@ xutil.get_neighbour = function(entity, entity_to_ignore)
         end
       end
 
-      local dir = xutil.boolean_direction(entity.direction)
+      local dir = xutil.boolean_direction(direction or entity.direction)
       local pos1 = {
         x = entity.position.x,
         y = entity.position.y
@@ -110,7 +110,7 @@ xutil.get_neighbour = function(entity, entity_to_ignore)
         y = pos1.y + prototypes.max_pipe_to_ground_distance * dir.y
       }
 
-      local shortest_distance = 0
+      local shortest_distance = 512
       local neighbour
 
       for _, placement in pairs(entity.surface.find_entities_filtered{
@@ -128,13 +128,13 @@ xutil.get_neighbour = function(entity, entity_to_ignore)
           xutil.get_type.base(entity),
           xutil.get_type.incomplete(entity)
         },
-        direction = (entity.direction + 8) % 16
+        direction = ((direction or entity.direction) + 8) % 16
       }) do
         -- make sure pipe is not the one we're ignoring
         if not entity_to_ignore or placement.unit_number ~= entity_to_ignore.unit_number then
           local distance = xutil.distance(placement, entity)
-          -- make sure its the closest, AND that it agrees that this is the correct neighbour
-          if shortest_distance == 0 or shortest_distance > distance then
+          -- make sure its the closest
+          if shortest_distance > distance then
             neighbour = placement
             shortest_distance = distance
           end
