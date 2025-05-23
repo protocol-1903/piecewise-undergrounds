@@ -29,7 +29,7 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
         {
           type = "simple-entity-with-owner",
           name = "pu-under-" .. pipe.name,
-          localised_name = {"entity-name.psuedo-underground", {"entity-name." .. pipe.name}},
+          localised_name = {"entity-name.psuedo-underground", pipe.localised_name or {"entity-name." .. pipe.name}},
           picture = util.empty_sprite(),
           icon = util.empty_icon().icon,
           selection_box = {{-0.35, -0.35}, {0.35, 0.35}},
@@ -50,9 +50,10 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
     local incomplete = {
       type = "valve",
       name = "incomplete-" .. u,
-      localised_name = {"entity-name.incomplete", {"entity-name." .. u}},
+      localised_name = {"entity-name.incomplete", underground.localised_name or {"entity-name." .. u}},
       hidden_in_factoriopedia = true,
       icon = underground.icon,
+      icons = underground.icons,
       icon_size = underground.icon_size,
       placeable_by = underground.placeable_by,
       minable = underground.minable,

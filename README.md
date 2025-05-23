@@ -12,7 +12,7 @@ Belts! I plan to fully support belts once pipes are working 100%. There are stil
 ## Compatability
 Probably won't be compatible with most mods that add unique pipes/pipe mechanics, if something breaks, let me know.
 
-Due to implementation limitations, underground pipes can't be mixed (where an underground of one type connects to an underground of another type). This is not an issue and will not be fixed. However, variations of the same type (like those added by [Pipes Plus](https://mods.factorio.com/mod/pipe_plus)) can be supported, but are not explicitly supported by default.
+Due to implementation limitations, underground pipes can't be mixed (where an underground of one type connects to an underground of another type). This is not an issue and will not be fixed. However, variations of the same type (like those added by [Pipes Plus](https://mods.factorio.com/mod/pipe_plus)) can be supported, but are not implicitly supported by default.
 
 ## Known compatibility:
 - Pymods
