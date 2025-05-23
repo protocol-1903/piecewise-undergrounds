@@ -3,9 +3,8 @@ local xutil = {}
 -- verify entity when called so we can use it as a check if the entity exists
 xutil.is_type = {
   base = function(entity)
-    type = entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) or ""
-    name = entity and (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name) or ""
-    return (type == "valve" or type == "pipe-to-ground") and name:sub(1,11) ~= "incomplete-"
+    return entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "pipe-to-ground" and
+      prototypes.entity["incomplete-" .. ((entity.name ~= "entity-ghost" and entity.name or entity.ghost_name) or "")]
   end,
   incomplete = function(entity)
     return entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) == "valve" and
