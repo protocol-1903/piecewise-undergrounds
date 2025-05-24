@@ -6,6 +6,9 @@
 Piecewise Undergrounds builds undergrounds and consumes pipes based on how long they are, instead of just requiring some for the recipe (because how does that make sense)
 Please report any bugs here or on [github](https://github.com/protocol-1903/piecewise-undergrounds)
 
+## How does it work?
+Just place the pipe to grounds down, and the mod will take pipes from your inventory to complete them. It works with bots, too. If you don't have enough pipes in your inventory, just hover over the incomplete pipe to grounds and the mod will attempt to complete them.
+
 ## Future plans
 Belts! I plan to fully support belts once pipes are working 100%. There are still a few bugs to iron out, so they aren't implemented for now.
 
@@ -13,6 +16,10 @@ Belts! I plan to fully support belts once pipes are working 100%. There are stil
 Probably won't be compatible with most mods that add unique pipes/pipe mechanics, if something breaks, let me know.
 
 Due to implementation limitations, underground pipes can't be mixed (where an underground of one type connects to an underground of another type). This is not an issue and will not be fixed. However, variations of the same type (like those added by [Pipes Plus](https://mods.factorio.com/mod/pipe_plus)) can be supported, but are not implicitly supported by default.
+
+## Known issues:
+- When placing pipe to grounds, they will not automatically rotate to the other direction after placing one down. As far as I know there is no way to implement that in scripting.
+- (Related to previous issue) When drag-placing pipe to grounds, it will continually place them in a line. I again don't think this is fixable via script.
 
 ## Known compatibility:
 - Pymods
