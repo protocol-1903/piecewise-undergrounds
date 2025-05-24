@@ -3,6 +3,8 @@ local cancelled_deconstruction = {}
 
 local xutil = require "xutil"
 
+lazy_poll_ticks = 10
+
 -- per tick, might slow down if required
 script.on_event(defines.events.on_tick, function()
   ordered_deconstruction = {}
@@ -11,8 +13,12 @@ script.on_event(defines.events.on_tick, function()
 
   for index, entities in pairs(storage) do
 
-    -- make sure they aren't marked for deconstruction, and are valid
-    if not checked[index] and entities[1].valid and entities[2].valid and not entities[1].to_be_deconstructed() and not entities[2].to_be_deconstructed() then
+    if not checked[index] and -- only need to check each pair once per tick
+      index % lazy_poll_ticks == game.tick % lazy_poll_ticks and -- lazy polling logic
+      -- entities will technically be polled twice as often (because double indexed) unless they happen to be on the same poll tick, which is fine
+      entities[1].valid and entities[2].valid and -- verify both are valid
+      not entities[1].to_be_deconstructed() and not entities[2].to_be_deconstructed() then
+      -- if either is supposed to be deconstructed, ignore (shouldnt happen but check anyway)
 
       -- search for proper entities
       local placements = entities[1].surface.find_entities_filtered {
@@ -61,7 +67,8 @@ script.on_event(defines.events.on_tick, function()
             quality = underground.quality,
             force = underground.force,
             create_build_effect_smoke = false,
-            type = xutil.is_belt(entity) and entity.belt_to_ground_type
+            type = xutil.is_belt(entity) and entity.belt_to_ground_type,
+            create_build_effect_smoke = true
           }
 
           new_entities[i] = new_entity
@@ -414,6 +421,19 @@ local function on_constructed(event)
     entity.order_deconstruction(entity.force)
   elseif entity.name ~= "entity-ghost" and xutil.is_type.incomplete(entity) then
     attempt_to_construct(entity, player)
+  -- elseif xutil.is_type.psuedo(entity) then
+  --   -- placed a psuedo underground... make sure its not undo crap
+  --   game.print(entity.name)
+  --   if entity.surface.count_entities_filtered {
+  --       name = entity.name,
+  --       ghost_name = entity.name == "entity-ghost" and entity.ghost_name or nil,
+  --       position = entity.position,
+  --       quality = entity.quality.name,
+  --       force = entity.force
+  --     } ~= 0 then
+  --       -- we found another entity, get rid of this one
+  --       entity.destroy()
+  --     end
   end
 end
 
@@ -548,5 +568,95 @@ script.on_event(defines.events.on_player_rotated_entity, function (event)
 
     attempt_to_construct(entity, player)
 
+  end
+end)
+
+script.on_event(defines.events.on_selected_entity_changed, function (event)
+  local player = game.players[event.player_index]
+
+  if player.controller_type == defines.controllers.remote or not player.selected then return end
+
+  local entity = player.selected
+
+  if not xutil.is_type.incomplete(entity) then return end
+
+  local entities = storage[entity.unit_number]
+
+  -- if under construction, attempt to construct
+  if entities then
+
+    -- count missing items
+    local ghosts = entity.surface.find_entities_filtered {
+      name = "entity-ghost",
+      ghost_name = xutil.get_type.psuedo(entity),
+      quality = entity.quality.name,
+      area = { -- this bs because reasons
+        {
+          entities[1].position.x <= entities[2].position.x and entities[1].position.x - 0.01 or entities[2].position.x - 0.01,
+          entities[1].position.y <= entities[2].position.y and entities[1].position.y - 0.01 or entities[2].position.y - 0.01
+        },
+        {
+          entities[1].position.x >= entities[2].position.x and entities[1].position.x + 0.01 or entities[2].position.x + 0.01,
+          entities[1].position.y >= entities[2].position.y and entities[1].position.y + 0.01 or entities[2].position.y + 0.01
+        }
+      }
+    }
+
+    if player.get_main_inventory().get_item_count{
+      name = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name,
+      quality = entity.quality
+    } >= #ghosts then
+      -- remove from inventory
+      player.get_main_inventory().remove{
+        name = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name,
+        quality = entity.quality,
+        count = #ghosts
+      }
+
+      -- place entities and remove the ghost entities
+      for _, ghost in pairs(ghosts) do
+        ghost.surface.create_entity{
+          name = ghost.ghost_name,
+          quality = ghost.quality,
+          position = ghost.position
+        }
+        ghost.destroy()
+      end
+    end
+  end
+end)
+
+-- no creating unwanted entities since the UndoRedoStack is only update *after* script calls which is dumb
+script.on_event(defines.events.on_undo_applied, function (event)
+  local force = game.players[event.player_index].force
+  for _, action in pairs(event.actions) do
+    if action.type == "removed-entity" then
+      local entities = game.surfaces[action.surface_index].find_entities_filtered {
+        name = action.target.name,
+        position = action.target.position,
+        quality = action.target.quality,
+        force = force
+      }
+      local ghost_entities = game.surfaces[action.surface_index].find_entities_filtered {
+        name = "entity-ghost",
+        ghost_name = action.target.name,
+        position = action.target.position,
+        quality = action.target.quality,
+        force = force
+      }
+      if #entities > 1 then
+        -- get rid of all but 1 entity
+        for index, entity in pairs(entities) do
+          if index > 1 then entity.destroy() end
+        end
+        -- get rid of all ghost entities
+        for _, entity in pairs(ghost_entities) do entity.destroy() end
+      elseif #ghost_entities > 1 then
+        for index, entity in pairs(ghost_entities) do
+          -- if we have an entity, or not first ghost
+          if index > 1 - #entities then entity.destroy() end
+        end
+      end
+    end
   end
 end)
