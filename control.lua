@@ -602,7 +602,7 @@ script.on_event(defines.events.on_selected_entity_changed, function (event)
       }
     }
 
-    if player.get_main_inventory().get_item_count{
+    if #ghosts ~= 0 and player.get_main_inventory().get_item_count{
       name = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name,
       quality = entity.quality
     } >= #ghosts then
@@ -613,7 +613,7 @@ script.on_event(defines.events.on_selected_entity_changed, function (event)
         count = #ghosts
       }
 
-      -- place entities and remove the ghost entities
+      -- place entities and remove the ghost entitieseeeeeddssddwamd
       for _, ghost in pairs(ghosts) do
         ghost.surface.create_entity{
           name = ghost.ghost_name,
