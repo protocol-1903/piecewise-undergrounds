@@ -4,7 +4,7 @@
   "title": "Piecewise Undergrounds",
   "author": "protocol_1903",
   "homepage": "https://discord.gg/K3fXMGVc4z",
-  "description": "What? Underground pipes actually require... pipes!?",
+  "description": "What? Underground pipes actually require... pipes!?\n\nPiecewise Undergrounds builds undergrounds and consumes pipes based on how long they are, instead of just requiring some for the recipe (because how does that make sense). It fully supports bots, modded pipes, pipe braiding, fluid shenanigans, rotation, undo, redo, NPT, CCP, and more.",
   "factorio_version": "2.0",
   "dependencies": [
     "base >= 2.0.33",

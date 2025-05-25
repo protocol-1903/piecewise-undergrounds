@@ -1,10 +1,12 @@
 [![ko-fi](https://img.shields.io/badge/Ko--fi-Donate%20-hotpink?logo=kofi&logoColor=white&style=for-the-badge)](https://ko-fi.com/protocol1903) [![](https://img.shields.io/badge/dynamic/json?color=orange&label=Factorio&query=downloads_count&suffix=%20downloads&url=https%3A%2F%2Fmods.factorio.com%2Fapi%2Fmods%2Fpiecewise-undergrounds&style=for-the-badge)](https://mods.factorio.com/mod/piecewise-undergrounds) [![](https://img.shields.io/badge/Discord-Community-blue?style=for-the-badge)](https://discord.gg/K3fXMGVc4z) [![](https://img.shields.io/badge/Github-Source-green?style=for-the-badge)](https://github.com/protocol-1903/piecewise-undergrounds)
 
 # This mod alters existing undergrounds. It is incredibly finicky, so mod compatability is hard and may take time. It is not garunteed.
+### Please report any bugs here or on [github](https://github.com/protocol-1903/piecewise-undergrounds)
 
 ## What?
+After some development into [Actual Underground Pipes](https://mods.factorio.com/mod/the-one-mod-with-underground-bits), I realized that there was a second, different alteration I could make to the fluid system mechanics to give it more depth. Now, when you place undergrounds, you will only consume as many pipes as needed to span that distance. It fully supports bots, modded pipes, pipe braiding, fluid shenanigans, rotation, undo, redo, NPT, CCP, and more.
+
 Piecewise Undergrounds builds undergrounds and consumes pipes based on how long they are, instead of just requiring some for the recipe (because how does that make sense)
-Please report any bugs here or on [github](https://github.com/protocol-1903/piecewise-undergrounds)
 
 ## How does it work?
 Just place the pipe to grounds down, and the mod will take pipes from your inventory to complete them. It works with bots, too. If you don't have enough pipes in your inventory, just hover over the incomplete pipe to grounds and the mod will attempt to complete them.
@@ -32,3 +34,8 @@ Due to implementation limitations, underground pipes can't be mixed (where an un
 - [Pipes Plus](https://mods.factorio.com/mod/pipe_plus): Not currently supported. If desired, will be supported in the future.
 
 If you wish to add compatibility with a mod, talk to me on here or discord so we can sort it out.
+
+### Some history:
+https://discord.com/channels/139677590393716737/1217399815370182696/1317458797899284510
+https://discord.com/channels/139677590393716737/1217399815370182696/1346257323496181823
+https://discord.com/channels/139677590393716737/1217399815370182696/1373940206675165274
