@@ -148,16 +148,24 @@ local function order_construction(entity, neighbour, player)
 
   local player_built
 
+  local item = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name
+
   if amount_required > 0 and player and player.get_main_inventory().get_item_count{
-    name = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name,
+    name = item,
     quality = entity.quality
   } >= amount_required then
 
     -- remove amount from player inventory
     player.get_main_inventory().remove{
-      name = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name,
+      name = item,
       quality = entity.quality,
       count = amount_required
+    }
+
+    -- notify player
+    player.create_local_flying_text{
+      create_at_cursor = true,
+      text = { "notification.took-from-inventory", amount_required, {"?", {"entity-name." .. item}, {"item-name." .. item}} }
     }
 
     player_built = true
@@ -226,16 +234,25 @@ local function cancel_construction(entity, player)
 
   -- take care of existing entities
   if player and #undergrounds > 0 then
+    local item = undergrounds[1].prototype.mineable_properties.products[1].name
+
     if player.get_main_inventory().can_insert{
-      name = undergrounds[1].prototype.mineable_properties.products[1].name,
+      name = item,
       quality = undergrounds[1].quality,
       count = #undergrounds
     } then -- only insert items if every single one can be inserted
       player.get_main_inventory().insert{
-        name = undergrounds[1].prototype.mineable_properties.products[1].name,
+        name = item,
         quality = undergrounds[1].quality,
         count = #undergrounds
       }
+
+      -- notify player
+      player.create_local_flying_text{
+        create_at_cursor = true,
+        text = { "notification.put-into-inventory", #undergrounds, {"?", {"entity-name." .. item}, {"item-name." .. item}} }
+      }
+
       -- delete entities
       for _, unit in pairs(undergrounds) do
         unit.destroy()
@@ -274,17 +291,26 @@ local function order_deconstruction(entity, ignore, player, direction)
   local distance = xutil.distance(entity, other_entity)
   local dir = xutil.relative_direction(entity, other_entity)
 
+  local pipe = xutil.get_type.pipe(entity)
+
   -- if player exists
   if not entity.to_be_deconstructed() and player and player.get_main_inventory().can_insert{
-    name = xutil.get_type.pipe(entity),
+    name = pipe,
     quality = entity.quality,
     count = distance
   } then -- only insert items if every single one can be inserted
     player.get_main_inventory().insert{
-      name = xutil.get_type.pipe(entity),
+      name = pipe,
       quality = entity.quality,
       count = distance
     }
+
+    -- notify player
+    player.create_local_flying_text{
+      create_at_cursor = true,
+      text = { "notification.put-into-inventory", distance, {"?", {"entity-name." .. pipe}, {"item-name." .. pipe}} }
+    }
+
   else -- create underground entities and mark for deconstruction
     for i = 0.5, distance - 0.5 do
       local unit = entity.surface.create_entity {
@@ -602,15 +628,23 @@ script.on_event(defines.events.on_selected_entity_changed, function (event)
       }
     }
 
+    local item = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name
+
     if #ghosts ~= 0 and player.get_main_inventory().get_item_count{
-      name = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name,
+      name = item,
       quality = entity.quality
     } >= #ghosts then
       -- remove from inventory
       player.get_main_inventory().remove{
-        name = prototypes.entity[xutil.get_type.psuedo(entity)].items_to_place_this[1].name,
+        name = item,
         quality = entity.quality,
         count = #ghosts
+      }
+
+      -- notify player
+      player.create_local_flying_text{
+        create_at_cursor = true,
+        text = { "notification.took-from-inventory", #ghosts, {"?", {"entity-name." .. item}, {"item-name." .. item}} }
       }
 
       -- place entities and remove the ghost entitieseeeeeddssddwamd
