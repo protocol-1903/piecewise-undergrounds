@@ -1,8 +1,9 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2
-Date: ????
+Date: 2025-05-30
   Changes:
     - Added a notification at the player cursor when items are removed or inserted
+    - Added a thumbnail
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.1
 Date: 2025-05-25
