@@ -35,6 +35,8 @@ Due to implementation limitations, underground pipes can't be mixed (where an un
 
 If you wish to add compatibility with a mod, talk to me on here or discord so we can sort it out.
 
+Thumbnail courtesy of JigSaW on Discord.
+
 ### Some history:
 https://discord.com/channels/139677590393716737/1217399815370182696/1317458797899284510
 https://discord.com/channels/139677590393716737/1217399815370182696/1346257323496181823
