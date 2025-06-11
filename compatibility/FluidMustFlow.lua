@@ -1,3 +1,3 @@
 if not mods["FluidMustFlow"] then return end
 
-error("Fluid Must Flow compatability not added! Please contact mod author")
+data.raw["pipe-to-ground"]["duct-underground"].pu_compat = { associated_pipe = "duct-small", }

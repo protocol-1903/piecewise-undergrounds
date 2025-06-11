@@ -28,7 +28,7 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
       data:extend({
         {
           type = "simple-entity-with-owner",
-          name = "pu-under-" .. pipe.name,
+          name = "pu-under-" .. (pipe.name ~= "duct-small" and pipe.name or "duct"),
           localised_name = {"entity-name.psuedo-underground", pipe.localised_name or {"entity-name." .. pipe.name}},
           picture = util.empty_sprite(),
           icon = util.empty_icon().icon,

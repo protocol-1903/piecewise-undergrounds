@@ -291,16 +291,16 @@ local function order_deconstruction(entity, ignore, player, direction)
   local distance = xutil.distance(entity, other_entity)
   local dir = xutil.relative_direction(entity, other_entity)
 
-  local pipe = xutil.get_type.pipe(entity)
+  local item = xutil.get_type.item(entity)
 
   -- if player exists
   if not entity.to_be_deconstructed() and player and player.get_main_inventory().can_insert{
-    name = pipe,
+    name = item,
     quality = entity.quality,
     count = distance
   } then -- only insert items if every single one can be inserted
     player.get_main_inventory().insert{
-      name = pipe,
+      name = item,
       quality = entity.quality,
       count = distance
     }
@@ -308,7 +308,7 @@ local function order_deconstruction(entity, ignore, player, direction)
     -- notify player
     player.create_local_flying_text{
       create_at_cursor = true,
-      text = { "notification.put-into-inventory", distance, {"?", {"entity-name." .. pipe}, {"item-name." .. pipe}} }
+      text = { "notification.put-into-inventory", distance, {"?", {"item-name." .. item}, {"entity-name." .. item}} }
     }
 
   else -- create underground entities and mark for deconstruction

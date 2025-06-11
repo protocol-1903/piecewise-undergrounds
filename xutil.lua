@@ -11,9 +11,8 @@ xutil.is_type = {
       (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name):sub(1,11) == "incomplete-"
   end,
   psuedo = function(entity)
-    type = entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) or ""
-    name = entity and (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name) or ""
-    return type == "simple-entity-with-owner" and name:sub(1,9) == "pu-under-"
+    return (entity and (entity.type ~= "entity-ghost" and entity.type or entity.ghost_type) or "") == "simple-entity-with-owner" and
+      (entity and (entity.name ~= "entity-ghost" and entity.name or entity.ghost_name) or ""):sub(1,9) == "pu-under-"
   end
 }
 
@@ -25,7 +24,10 @@ xutil.get_type = {
       name or ""
   end,
   pipe = function(entity)
-    return xutil.get_type.base(entity):sub(1,-11)
+    return xutil.get_type.base(entity):sub(1, prototypes.item[xutil.get_type.base(entity):sub(1,-11)] and -11 or -13)
+  end,
+  item = function(entity)
+    return xutil.get_type.pipe(entity) .. (prototypes.item[xutil.get_type.base(entity):sub(1,-11)] and "" or "-small")
   end,
   incomplete = function(entity)
     return "incomplete-" .. xutil.get_type.base(entity)
