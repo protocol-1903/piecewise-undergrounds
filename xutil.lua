@@ -92,7 +92,7 @@ xutil.get_neighbour = function(entity, entity_to_ignore, direction)
       local max_distance = 0
       for i=1, #entity.fluidbox do
         -- get each pipe connection in the current fluidbox
-        for _, pipe_connection in pairs(entity.fluidbox.get_pipe_connections(i)) do
+        for _, pipe_connection in pairs(entity.prototype.fluidbox_prototypes[1].pipe_connections) do
           -- must have a connection and must be underground type and not ordered for deconstruction
           if pipe_connection.connection_type == "underground" then
             max_distance = pipe_connection.max_underground_distance
@@ -107,8 +107,8 @@ xutil.get_neighbour = function(entity, entity_to_ignore, direction)
         y = entity.position.y
       }
       local pos2 = {
-        x = pos1.x + prototypes.max_pipe_to_ground_distance * dir.x,
-        y = pos1.y + prototypes.max_pipe_to_ground_distance * dir.y
+        x = pos1.x + max_distance * dir.x,
+        y = pos1.y + max_distance * dir.y
       }
 
       local shortest_distance = 512
@@ -117,12 +117,12 @@ xutil.get_neighbour = function(entity, entity_to_ignore, direction)
       for _, placement in pairs(entity.surface.find_entities_filtered{
         area = { -- find the same entity in that direction
           {
-            x = pos1.x < pos2.x and pos1.x or pos2.x - 0.1,
-            y = pos1.y < pos2.y and pos1.y or pos2.y - 0.1
+            x = (pos1.x < pos2.x and pos1.x or pos2.x) - 0.5,
+            y = (pos1.y < pos2.y and pos1.y or pos2.y) - 0.5
           },
           {
-            x = pos1.x > pos2.x and pos1.x or pos2.x - 0.1,
-            y = pos1.y > pos2.y and pos1.y or pos2.y - 0.1
+            x = (pos1.x > pos2.x and pos1.x or pos2.x) + 0.5,
+            y = (pos1.y > pos2.y and pos1.y or pos2.y) + 0.5
           }
         },
         name = {

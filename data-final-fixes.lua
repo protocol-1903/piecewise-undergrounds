@@ -34,6 +34,7 @@ for u, underground in pairs(data.raw["pipe-to-ground"]) do
           icon = util.empty_icon().icon,
           deconstruction_alternative = "incomplete-" .. u,
           allow_copy_paste = false,
+          collision_mask = {layers = {}},
           flags = { "placeable-neutral", "not-on-map", "not-upgradable", "placeable-off-grid", "player-creation" },
           placeable_by = { item = pipe.name, count = 1},
           minable = { mining_time = 1, result = pipe.name },
