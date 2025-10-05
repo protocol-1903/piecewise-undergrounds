@@ -82,7 +82,7 @@ xutil.get_neighbour = function(entity, entity_to_ignore, direction)
         for j, pipe_connection in pairs(entity.fluidbox.get_pipe_connections(i)) do
   
           -- must have a connection and must be underground type and not ordered for deconstruction
-          if pipe_connection.target and pipe_connection.connection_type == "underground" and pipe_connection.target.owner.type ~= "entity-ghost" and not pipe_connection.target.owner.to_be_deconstructed() then
+          if pipe_connection.target and pipe_connection.target.owner.quality == entity.quality and pipe_connection.connection_type == "underground" and pipe_connection.target.owner.type ~= "entity-ghost" and not pipe_connection.target.owner.to_be_deconstructed() then
             return pipe_connection.target.owner
           end
         end
@@ -129,6 +129,7 @@ xutil.get_neighbour = function(entity, entity_to_ignore, direction)
           xutil.get_type.base(entity),
           xutil.get_type.incomplete(entity)
         },
+        quality = entity.quality.name,
         direction = ((direction or entity.direction) + 8) % 16
       }) do
         -- make sure pipe is not the one we're ignoring

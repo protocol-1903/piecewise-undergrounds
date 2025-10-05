@@ -66,7 +66,6 @@ script.on_event(defines.events.on_tick, function()
             direction = underground.direction,
             quality = underground.quality,
             force = underground.force,
-            create_build_effect_smoke = false,
             type = xutil.is_belt(entity) and entity.belt_to_ground_type,
             create_build_effect_smoke = true
           }
@@ -692,5 +691,18 @@ script.on_event(defines.events.on_undo_applied, function (event)
         end
       end
     end
+  end
+end)
+
+-- print warning about not supporting quality
+script.on_event(defines.events.on_singleplayer_init, function (event)
+  if feature_flags.quality then
+    game.show_message_dialog {text = {"messages.pu-no-quality-support"}}
+  end
+end)
+
+scrip.on_event(defines.events.on_player_joined_game, function (event)
+  if feature_flags.quality then
+    game.get_player(event.player_index).print{"messages.pu-no-quality-support"}
   end
 end)
