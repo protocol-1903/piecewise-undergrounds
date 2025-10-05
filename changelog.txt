@@ -5,6 +5,8 @@ Date: ????
     - Full Fluid Must Flow compatibility
   Changes:
     - Will no longer be actively supporting quality. It's too much work and there's too many edge cases. You'll get a warning every time you open a save
+  Bugfixes:
+    - Fixed a crash when trying to undo an action without an associated surface (no, i have no idea either)
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2
 Date: 2025-05-30

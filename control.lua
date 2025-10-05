@@ -663,7 +663,7 @@ end)
 script.on_event(defines.events.on_undo_applied, function (event)
   local force = game.players[event.player_index].force
   for _, action in pairs(event.actions) do
-    if action.type == "removed-entity" then
+    if action.type == "removed-entity" and action.surface_index then
       local entities = game.surfaces[action.surface_index].find_entities_filtered {
         name = action.target.name,
         position = action.target.position,
