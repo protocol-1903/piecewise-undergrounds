@@ -701,7 +701,7 @@ script.on_event(defines.events.on_singleplayer_init, function (event)
   end
 end)
 
-scrip.on_event(defines.events.on_player_joined_game, function (event)
+script.on_event(defines.events.on_player_joined_game, function (event)
   if feature_flags.quality then
     game.get_player(event.player_index).print{"messages.pu-no-quality-support"}
   end
