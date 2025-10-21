@@ -696,13 +696,13 @@ end)
 
 -- print warning about not supporting quality
 script.on_event(defines.events.on_singleplayer_init, function (event)
-  if feature_flags.quality then
+  if script.feature_flags.quality then
     game.show_message_dialog {text = {"messages.pu-no-quality-support"}}
   end
 end)
 
 script.on_event(defines.events.on_player_joined_game, function (event)
-  if feature_flags.quality then
+  if script.feature_flags.quality then
     game.get_player(event.player_index).print{"messages.pu-no-quality-support"}
   end
 end)
