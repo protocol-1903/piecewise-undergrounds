@@ -1,4 +1,5 @@
 require("__piecewise-undergrounds__/compatibility/FluidMustFlow")
+require("__piecewise-undergrounds__/compatibility/matts-logistics")
 
 for u, underground in pairs(data.raw["pipe-to-ground"]) do
   if not underground.pu_compat then
