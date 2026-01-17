@@ -7,22 +7,19 @@ local xutil = require "xutil"
 
 require("__piecewise-undergrounds__/compatibility/compatibility")
 
--- modify undergrounds to only connect to proper same types, makes the whole thing a lot easier
-if not mods["no-pipe-touching"] then
-  for u, underground in pairs(data.raw["pipe-to-ground"]) do
-    for _, connection in pairs(underground.fluid_box.pipe_connections) do
-      if connection.connection_type == "underground" then
-        connection.connection_category = u
+for u, underground in pairs(data.raw["pipe-to-ground"]) do
+  if u:sub(1,9) ~= "incomplete-" and not underground.pu_compat.ignore then
+
+    -- modify undergrounds to only connect to proper same types, makes the whole thing a lot easier
+    if not mods["no-pipe-touching"] then
+      for _, connection in pairs(underground.fluid_box.pipe_connections) do
+        if connection.connection_type == "underground" then
+          connection.connection_category = u
+        end
       end
     end
-  end
-end
 
-for u, underground in pairs(data.raw["pipe-to-ground"]) do
-
-  if u:sub(1,9) ~= "incomplete-" then
-
-    pipe = data.raw.pipe[underground.pu_compat.associated_pipe] or data.raw["storage-tank"][underground.pu_compat.associated_pipe]
+    local pipe = data.raw.pipe[underground.pu_compat.associated_pipe] or data.raw["storage-tank"][underground.pu_compat.associated_pipe]
     -- only create if the item exists, and it has not already been created
     if pipe and data.raw.item[pipe.name] and not data.raw["simple-entity-with-owner"]["pu-under-" .. pipe.name] then
       data:extend({

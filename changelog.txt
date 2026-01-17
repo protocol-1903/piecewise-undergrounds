@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.7
+Date: 2026-01-17
+  Changes:
+    - Fixed incompatibility with underground heat pipes
+    - Fixed incompatibility with krastorio 2
+---------------------------------------------------------------------------------------------------
 Version: 1.0.6
 Date: 2025-12-29
   Compatibility:
