@@ -33,7 +33,7 @@ Due to implementation limitations, underground pipes can't be mixed (where an un
 - [Advanced Fluid Handling](https://mods.factorio.com/mod/underground-pipe-pack): because AFH has undergrounds with multiple connections, it would be incredibly difficult to get working with how this mod is implemented. It will not be supported.
 - [Pipes Plus](https://mods.factorio.com/mod/pipe_plus): Not currently supported. If desired, will be supported in the future.
 
-If you wish to add compatibility with a mod, talk to me on here or discord so we can sort it out.
+If you wish to add compatibility with a mod, talk to me on github or discord so we can sort it out.
 
 Thumbnail courtesy of JigSaW on Discord.
 
