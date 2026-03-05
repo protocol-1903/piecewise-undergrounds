@@ -3,7 +3,7 @@ local cancelled_deconstruction = {}
 
 local xutil = require "xutil"
 
-lazy_poll_ticks = 10
+local lazy_poll_ticks = 10
 
 -- per tick, might slow down if required
 script.on_event(defines.events.on_tick, function()
@@ -66,7 +66,7 @@ script.on_event(defines.events.on_tick, function()
             direction = underground.direction,
             quality = underground.quality,
             force = underground.force,
-            type = xutil.is_belt(entity) and entity.belt_to_ground_type,
+            type = xutil.is_belt(underground) and underground.belt_to_ground_type,
             create_build_effect_smoke = true
           }
 
@@ -382,7 +382,7 @@ local function attempt_to_construct(entity, player)
   local neighbour = xutil.get_neighbour(entity)
 
   if not neighbour or neighbour.to_be_deconstructed() then return end
-  
+
   if xutil.is_type.incomplete(neighbour) then
     if storage[neighbour.unit_number] then
       cancel_construction(neighbour)
@@ -391,7 +391,7 @@ local function attempt_to_construct(entity, player)
     order_construction(entity, neighbour, player)
 
   elseif xutil.is_type.base(neighbour) then
-    new_entities = order_deconstruction(neighbour, entity, player, neighbour.direction)
+    local new_entities = order_deconstruction(neighbour, entity, player, neighbour.direction)
 
     order_construction(entity, new_entities[1], player)
   end
