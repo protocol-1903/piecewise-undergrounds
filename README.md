@@ -41,3 +41,6 @@ Thumbnail courtesy of JigSaW on Discord.
 https://discord.com/channels/139677590393716737/1217399815370182696/1317458797899284510
 https://discord.com/channels/139677590393716737/1217399815370182696/1346257323496181823
 https://discord.com/channels/139677590393716737/1217399815370182696/1373940206675165274
+
+My mods are made 100% by humans, with no computer generated code or graphics.
+If you have a mod idea, let me know and I can look into it.
