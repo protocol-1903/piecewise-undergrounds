@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.8
+Date: 2026-05-23
+  Changes:
+    - Updated underground pipe association detection logic to use the same checks as actual underground pipes. Resolves https://github.com/protocol-1903/piecewise-undergrounds/issues/5
+  Compatibility:
+    - Fixed incompatibility with Dredgeworks
+    - Fixed incompatibility with Factorio Tiberium: Conquer and Dawn
+    - Fixed incompatibility with Laserfence
+    - Fixed incompatibility with Unipipe
+    - Fixed incompatibility with Krastorio 2 Spaced Out
+    - Fixed incompatibility with Linox
+---------------------------------------------------------------------------------------------------
 Version: 1.0.7
 Date: 2026-01-17
   Changes:
